@@ -109,10 +109,8 @@ def retrieve_chunks(query, n):
     data = results['documents'][0]
     return data
 
-def main():
-    store_document("pokemon.txt")
-    query = "What kind of Pokemon is Piplup? Describe this Pokemon."
-    data = retrieve_chunks(query, 2)
+def answer_query_with_rag(query, n=2):
+    data = retrieve_chunks(query, n)
     context = '\n'.join(data)
 
     prompt = """
@@ -121,13 +119,21 @@ def main():
     {context}
     -------------
     Given the context information, respond to this prompt: {query}
+    Avoid starting your response with phrases like "According to the context information", "Based on the provided context", or similar. Just directly provide the answer.
     """
 
     output = ollama.generate(
-        model="llama3.2:3b",
+        model="llama3:latest",
         prompt=prompt.format(context=context, query=query)
     )
-    print(output['response'])
+    return output['response']
+
+
+def main():
+    # store_document("pokemon.txt")
+    query = "Which Pokemon resemble penguins?"
+    answer = answer_query_with_rag(query)
+    print(answer)
 
 if __name__ == "__main__":
     main()

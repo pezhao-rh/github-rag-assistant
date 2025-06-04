@@ -3,8 +3,10 @@ from langchain.text_splitter import Language, RecursiveCharacterTextSplitter
 import ollama
 import chromadb
 import uuid
+import shutil
 
 client = chromadb.PersistentClient(path=".chroma")
+#client = chromadb.EphemeralClient()
 collection = client.get_or_create_collection(name="docs")
 
 file_extension_to_language = {
@@ -52,7 +54,7 @@ def load_document(filepath):
         print(f"Error opening {filepath}: {e}")
         return None
     
-def chunk_document(filepath, chunk_size=500, chunk_overlap=50):
+def chunk_document(filepath, chunk_size=1000, chunk_overlap=100):
 
     text = load_document(filepath)
 
@@ -83,6 +85,7 @@ def chunk_document(filepath, chunk_size=500, chunk_overlap=50):
     return chunks
 
 def get_embedding(chunk):
+    # embedding using ollama minilm
     response = ollama.embed(model="all-minilm", input=chunk)
     embedding = response["embeddings"]
     return embedding[0]
@@ -91,16 +94,23 @@ def store_document(filepath):
     chunks = chunk_document(filepath)
     doc_uuid = str(uuid.uuid4())
 
+    # store chunks in vector db
     for i, d in enumerate(chunks):
         embedding = get_embedding(d.page_content)
         chunk_id = f"{doc_uuid}-{i}"
         collection.add(
             ids=[chunk_id],
             embeddings=[embedding],
-            documents=[d.page_content]
+            documents=[d.page_content],
+            metadatas=[{"file": filepath}]
         )
 
+def store_documents(files):
+    for file in files:
+        store_document(file)
+
 def retrieve_chunks(query, n):
+    # retrieve relevant chunks from db
     embedding = get_embedding(query)
     results = collection.query(
         query_embeddings = [embedding],
@@ -109,16 +119,28 @@ def retrieve_chunks(query, n):
     data = results['documents'][0]
     return data
 
-def answer_query_with_rag(query, n=2):
+def answer_query_with_rag(query, n=3):
     data = retrieve_chunks(query, n)
     context = '\n'.join(data)
 
+    # prompt = """
+    # Context information is below.
+    # -------------
+    # {context}
+    # -------------
+    # Given the context information, respond to this prompt: {query}
+    # Avoid starting your response with phrases like "According to the context information", "Based on the provided context", or similar. Just directly provide the answer.
+    # """
+
     prompt = """
-    Context information is below.
-    -------------
+    You are a highly knowledgeable AI assistant specializing in understanding and explaining codebases and technical documentation from **GitHub repositories**. Your task is to answer the user's question by rigorously analyzing the context provided. 
+
+    Context:
+    ---
     {context}
-    -------------
-    Given the context information, respond to this prompt: {query}
+    ---
+
+    Question: {query}
     Avoid starting your response with phrases like "According to the context information", "Based on the provided context", or similar. Just directly provide the answer.
     """
 
@@ -126,8 +148,19 @@ def answer_query_with_rag(query, n=2):
         model="llama3:latest",
         prompt=prompt.format(context=context, query=query)
     )
+    print(prompt.format(context=context, query=query))
     return output['response']
 
+def answer_query_no_rag():
+    prompt = """
+    "You are a helpful AI assistant. To answer questions about a GitHub repository, I need you to first provide a repository URL in the 'Settings' section of the sidebar and click 'Ingest'. Once the repository is processed, I'll be able to answer your questions."
+    """
+
+    output = ollama.generate(
+        model="llama3:latest",
+        prompt=prompt
+    )
+    return output['response']
 
 def main():
     # store_document("pokemon.txt")

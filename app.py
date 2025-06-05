@@ -35,7 +35,7 @@ with st.sidebar:
             st.warning("Aleady processed repository")
 
     if st.session_state.ingested == True and st.session_state.diagram:
-        st.markdown("---")
+        st.header("Saved Repository")
         st.markdown(f"{st.session_state.diagram}")
 
 # main page
@@ -45,6 +45,14 @@ for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
+        # show sources
+        if message["role"] == "assistant" and "sources" in message and message["sources"]:
+            with st.expander("View Sources"):
+                for idx, source in enumerate(message["sources"]):
+                    st.markdown(f"**File:** `{source["file"]}`")
+                    st.code(source["text"])
+                    st.markdown("---")
+
 if prompt := st.chat_input():
 
     st.session_state.messages.append({"role": "user", "content": prompt})
@@ -53,9 +61,24 @@ if prompt := st.chat_input():
         st.markdown(prompt)
 
     with st.chat_message("assistant"):
+        
+        answer = None
+        retrieved_sources = None
 
-        answer = answer_query_with_rag(prompt) if st.session_state.ingested == True else answer_query_no_rag()
-        response = st.write(answer)
+        if st.session_state.ingested:
+            answer, retrieved_sources = answer_query_with_rag(prompt)
+        else:
+            answer = answer_query_no_rag()
 
-    st.session_state.messages.append({"role": "assistant", "content": answer})
+        st.write(answer)
+
+        # show sources
+        if retrieved_sources:
+            with st.expander("View Sources"):
+                for idx, source in enumerate(retrieved_sources):
+                    st.markdown(f"**File:** `{source["file"]}`")
+                    st.code(source["text"])
+                    st.markdown("---")
+
+    st.session_state.messages.append({"role": "assistant", "content": answer, "sources": retrieved_sources})
     

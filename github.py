@@ -92,7 +92,7 @@ def isIgnored(filepath):
         # Documentation
         'site-packages','.docusaurus','.next','.nuxt',
         # Other common patterns
-        'LICENSE', '.helmignore', '*.pdf',
+        'LICENSE', '.helmignore', '*.pdf', '.vscode',
         # Minified files
         '*.min.js','*.min.css',
         # Source maps

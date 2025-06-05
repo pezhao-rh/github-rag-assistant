@@ -401,6 +401,7 @@ dependencies = [
     { name = "ollama" },
     { name = "pgvector" },
     { name = "psycopg2-binary" },
+    { name = "requests" },
     { name = "sqlalchemy" },
     { name = "streamlit" },
 ]
@@ -412,6 +413,7 @@ requires-dist = [
     { name = "ollama", specifier = ">=0.5.1" },
     { name = "pgvector", specifier = ">=0.4.1" },
     { name = "psycopg2-binary", specifier = ">=2.9.10" },
+    { name = "requests", specifier = ">=2.32.3" },
     { name = "sqlalchemy", specifier = ">=2.0.41" },
     { name = "streamlit", specifier = ">=1.45.1" },
 ]

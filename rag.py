@@ -4,9 +4,11 @@ import ollama
 import chromadb
 import uuid
 import shutil
+import requests
+import fnmatch
 
-client = chromadb.PersistentClient(path=".chroma")
-#client = chromadb.EphemeralClient()
+# client = chromadb.PersistentClient(path=".chroma")
+client = chromadb.EphemeralClient()
 collection = client.get_or_create_collection(name="docs")
 
 file_extension_to_language = {
@@ -43,12 +45,22 @@ file_extension_to_language = {
     "hs": Language.HASKELL,
 }
 
+def is_image(filepath):
+    image_patterns = ['*.jpg', '*.jpeg', '*.png']
+    for pattern in image_patterns:
+        if fnmatch.fnmatch(filepath, pattern):
+            return True
+    return False
+
 def load_document(filepath):
     # extract file contents
+    print(f"Reading {filepath}")
+    # if is_image(filepath):
+    #     return image_to_text(filepath)
+# else:
     try:
         with open(filepath, 'r') as f:
             content = f.read()
-            print(f"Reading {filepath}")
             return content
     except Exception as e:
         print(f"Error opening {filepath}: {e}")
@@ -117,20 +129,22 @@ def retrieve_chunks(query, n):
         n_results=n
     )
     data = results['documents'][0]
-    return data
+    metadata = results['metadatas'][0]
+    return data, metadata
 
 def answer_query_with_rag(query, n=3):
-    data = retrieve_chunks(query, n)
-    context = '\n'.join(data)
+    data, metadata = retrieve_chunks(query, n)
 
-    # prompt = """
-    # Context information is below.
-    # -------------
-    # {context}
-    # -------------
-    # Given the context information, respond to this prompt: {query}
-    # Avoid starting your response with phrases like "According to the context information", "Based on the provided context", or similar. Just directly provide the answer.
-    # """
+    sources = []
+    lines = []
+    for i in range(len(data)):
+        filename = os.path.basename(metadata[i]['file'])
+        text = data[i]
+        line = f"{filename}: {text}"
+        lines.append(line)
+        sources.append({"file": filename, "text": text})
+
+    context = '\n'.join(lines)
 
     prompt = """
     You are a highly knowledgeable AI assistant specializing in understanding and explaining codebases and technical documentation from **GitHub repositories**. Your task is to answer the user's question by rigorously analyzing the context provided. 
@@ -149,7 +163,7 @@ def answer_query_with_rag(query, n=3):
         prompt=prompt.format(context=context, query=query)
     )
     print(prompt.format(context=context, query=query))
-    return output['response']
+    return output['response'], sources
 
 def answer_query_no_rag():
     prompt = """
@@ -162,11 +176,29 @@ def answer_query_no_rag():
     )
     return output['response']
 
-def main():
-    # store_document("pokemon.txt")
+def image_to_text(filepath):
+    name = os.path.basename(filepath)
+    prompt = f"Given the image name, {name}, and content, describe this image. The description is most likely going to be used to improve other llm's understanding of the image, so give as much details as possible. Do not hallucinate."
+    response = ollama.chat(
+        model='llama3.2-vision',
+        messages=[{
+            'role': 'user',
+            'content': prompt,
+            'images': [filepath]
+        }]
+    )
+    
+    return response['message']['content']
+
+def single_document_rag_test():
+    store_document("pokemon.txt")
     query = "Which Pokemon resemble penguins?"
     answer = answer_query_with_rag(query)
     print(answer)
+
+
+def main():
+    print(image_to_text('rag-architecture.png'))
 
 if __name__ == "__main__":
     main()

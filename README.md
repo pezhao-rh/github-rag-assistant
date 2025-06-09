@@ -15,7 +15,7 @@ A chat assistant that allows users to ask questions about a GitHub repo (e.g., â
 
 ## See it in action 
 
-![demo](./images/demo.png)
+![demo](./images/source-demo.png)
 
 ## Architecture
 

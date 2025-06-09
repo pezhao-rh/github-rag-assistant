@@ -25,10 +25,10 @@ A chat assistant that allows users to ask questions about a GitHub repo (e.g., â
 
 ## Requirements
 
-Ollama installed with the `minilm` and `llama3` models:
+Ollama installed with the `minilm` and `llama3.1:8b-instruct-fp16` models:
 ```sh
 ollama pull all-minilm
-ollama pull llama3
+ollama pull llama3.1:8b-instruct-fp16
 ```
 
 ## Install 

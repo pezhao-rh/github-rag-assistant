@@ -585,7 +585,7 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
-    { name = "chromadb", specifier = ">=1.0.12" },
+    { name = "chromadb", specifier = ">=1.0.0" },
     { name = "faiss-cpu", specifier = ">=1.11.0" },
     { name = "langchain", specifier = ">=0.3.25" },
     { name = "llama-stack", specifier = ">=0.2.10.1" },

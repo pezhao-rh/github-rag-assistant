@@ -1,4 +1,4 @@
-from rag import store_documents, answer_query_with_rag, answer_query_no_rag
+from rag_llamastack import store_documents, answer_query_with_rag, answer_query_no_rag
 from github import clone_and_build_tree, delete_repository
 import streamlit as st
 

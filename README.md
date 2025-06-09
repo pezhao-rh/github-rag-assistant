@@ -54,7 +54,14 @@ uv install
 3. Make sure Ollama is running
 
 ```sh
-ollama run llama3 # Or start the Ollama application
+ollama run llama3.1:8b-instruct-fp16 # Or start the Ollama application
+```
+
+4. Start the LlamaStack server
+
+```sh
+source .venv/bin/activate
+INFERENCE_MODEL=llama3.1:8b-instruct-fp16 llama stack build --template ollama --image-type venv --run
 ```
 
 4. Run the Streamlit app

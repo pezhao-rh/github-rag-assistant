@@ -46,10 +46,10 @@ for message in st.session_state.messages:
         st.markdown(message["content"])
 
         # show sources
-        if message["role"] == "assistant" and "sources" in message and message["sources"]:
+        if message["role"] == "assistant" and "sources" in message and message["sources"] and len(message["sources"]) > 0:
             with st.expander("View Sources"):
                 for idx, source in enumerate(message["sources"]):
-                    st.markdown(f"**File:** `{source["file"]}`")
+                    st.markdown(f"`{source["file"]}`")
                     st.code(source["text"])
                     st.markdown("---")
 
@@ -73,10 +73,10 @@ if prompt := st.chat_input():
         st.write(answer)
 
         # show sources
-        if retrieved_sources:
+        if retrieved_sources and len(retrieved_sources) > 0:
             with st.expander("View Sources"):
                 for idx, source in enumerate(retrieved_sources):
-                    st.markdown(f"**File:** `{source["file"]}`")
+                    st.markdown(f"`{source["file"]}`")
                     st.code(source["text"])
                     st.markdown("---")
 

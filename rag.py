@@ -1,3 +1,5 @@
+# RAG implementation using Ollama and ChromaDB
+
 import os
 from langchain.text_splitter import Language, RecursiveCharacterTextSplitter
 import ollama
@@ -7,7 +9,7 @@ import shutil
 import requests
 import fnmatch
 
-# client = chromadb.PersistentClient(path=".chroma")
+#client = chromadb.PersistentClient(path=".chroma")
 client = chromadb.EphemeralClient()
 collection = client.get_or_create_collection(name="docs")
 
@@ -63,38 +65,43 @@ def load_document(filepath):
             content = f.read()
             return content
     except Exception as e:
-        print(f"Error opening {filepath}: {e}")
+        print(f"Error opening {filepath}, will not store: {e}")
         return None
     
-def chunk_document(filepath, chunk_size=1000, chunk_overlap=100):
+def chunk_document(filepath, chunk_size=750, chunk_overlap=75):
 
     text = load_document(filepath)
 
-    # check language of file
-    _, ext = os.path.splitext(filepath)
-    ext = ext.lstrip('.')
-    language = None
-    if ext in file_extension_to_language:
-        language = file_extension_to_language[ext]
-    
-    # initiate text splitter
-    text_splitter = None
-    if language is None:
-        text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size = chunk_size,
-            chunk_overlap = chunk_overlap
-        )
-    else:
-        text_splitter = RecursiveCharacterTextSplitter.from_language(
-            chunk_size = chunk_size,
-            chunk_overlap = chunk_overlap,
-            language = language
-        )
-    
-    # extract chunks
-    chunks = text_splitter.create_documents([text])
+    if text:
+        # check language of file
+        _, ext = os.path.splitext(filepath)
+        ext = ext.lstrip('.')
+        language = None
+        if ext in file_extension_to_language:
+            language = file_extension_to_language[ext]
+        
+        # initiate text splitter
+        text_splitter = None
+        if language is None:
+            text_splitter = RecursiveCharacterTextSplitter(
+                chunk_size = chunk_size,
+                chunk_overlap = chunk_overlap
+            )
+        else:
+            text_splitter = RecursiveCharacterTextSplitter.from_language(
+                chunk_size = chunk_size,
+                chunk_overlap = chunk_overlap,
+                language = language
+            )
+        
+        # extract chunks
+        chunks = text_splitter.create_documents([text])
 
-    return chunks
+        return chunks
+    
+    else:
+        return None
+    
 
 def get_embedding(chunk):
     # embedding using ollama minilm
@@ -104,18 +111,20 @@ def get_embedding(chunk):
 
 def store_document(filepath):
     chunks = chunk_document(filepath)
-    doc_uuid = str(uuid.uuid4())
 
-    # store chunks in vector db
-    for i, d in enumerate(chunks):
-        embedding = get_embedding(d.page_content)
-        chunk_id = f"{doc_uuid}-{i}"
-        collection.add(
-            ids=[chunk_id],
-            embeddings=[embedding],
-            documents=[d.page_content],
-            metadatas=[{"file": filepath}]
-        )
+    if chunks:
+        doc_uuid = str(uuid.uuid4())
+
+        # store chunks in vector db
+        for i, d in enumerate(chunks):
+            embedding = get_embedding(d.page_content)
+            chunk_id = f"{doc_uuid}-{i}"
+            collection.add(
+                ids=[chunk_id],
+                embeddings=[embedding],
+                documents=[d.page_content],
+                metadatas=[{"file": filepath}]
+            )
 
 def store_documents(files):
     for file in files:
@@ -132,7 +141,7 @@ def retrieve_chunks(query, n):
     metadata = results['metadatas'][0]
     return data, metadata
 
-def answer_query_with_rag(query, n=3):
+def answer_query_with_rag(query, n=5):
     data, metadata = retrieve_chunks(query, n)
 
     sources = []
@@ -159,7 +168,7 @@ def answer_query_with_rag(query, n=3):
     """
 
     output = ollama.generate(
-        model="llama3:latest",
+        model="llama3.1:8b-instruct-fp16",
         prompt=prompt.format(context=context, query=query)
     )
     print(prompt.format(context=context, query=query))
@@ -171,7 +180,7 @@ def answer_query_no_rag():
     """
 
     output = ollama.generate(
-        model="llama3:latest",
+        model="llama3.1:8b-instruct-fp16",
         prompt=prompt
     )
     return output['response']
@@ -198,7 +207,7 @@ def single_document_rag_test():
 
 
 def main():
-    print(image_to_text('rag-architecture.png'))
+    store_document('rag-architecture.png')
 
 if __name__ == "__main__":
     main()

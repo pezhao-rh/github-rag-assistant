@@ -58,7 +58,7 @@ def isIgnored(filepath):
     # if file should be ignored for ingestion
     patterns = [
         # Python
-        '*.pyc','*.pyo','*.pyd','__pycache__','.pytest_cache','.coverage','.tox','.nox','.mypy_cache','.ruff_cache','.hypothesis','poetry.lock','Pipfile.lock',
+        '*.pyc','*.pyo','*.pyd','__pycache__','.pytest_cache','.coverage','.tox','.nox','.mypy_cache','.ruff_cache','.hypothesis','poetry.lock','Pipfile.lock','init.py','__init__.py',
         # JavaScript/FileSystemNode
         'node_modules','bower_components','package-lock.json','yarn.lock','.npm','.yarn','.pnpm-store','bun.lock','bun.lockb',
         # Java'*.class',
@@ -86,13 +86,15 @@ def isIgnored(filepath):
         # Virtual environments
         'venv','.venv','env','virtualenv',
         # Temporary and cache files
-        '*.log','*.bak','*.swp','*.tmp','*.temp','.cache','.sass-cache','.eslintcache','.DS_Store','Thumbs.db','desktop.ini',
+        '*.log','*.bak','*.swp','*.tmp','*.temp','.cache','.sass-cache','.eslintcache','.DS_Store','Thumbs.db','desktop.ini','.vscode',
         # Build directories and artifacts
         'build','dist','target','out','*.egg-info','*.egg','*.whl','*.so',
         # Documentation
         'site-packages','.docusaurus','.next','.nuxt',
         # Other common patterns
-        'LICENSE', '.helmignore', '*.pdf', '.vscode',
+        'LICENSE','.helmignore','*.pdf','*.csv',
+        # Zip files
+        '*.tar','*.zip','*.tar.gz','*.tar.xz','*.tar.bz2',
         # Minified files
         '*.min.js','*.min.css',
         # Source maps
@@ -189,13 +191,13 @@ def clone_and_build_tree(link):
     return root_path, file_list, diagram
 
 def main():
-    # root_path = clone_repository('https://github.com/rh-ai-kickstart/AI-Observability-Metric-Summarizer.git')
-    # root_node = build_tree(root_path)
-    # markdown = generate_diagram(root_node)
-    # print(markdown)
-    root_path = '/Users/pezhao/Documents/Testing/github-rag-assistant/RAG-Blueprint'
-    delete_repository(root_path)
-    shutil.rmtree('.chroma')
+    root_path = clone_repository('https://github.com/rh-ai-kickstart/AI-Observability-Metric-Summarizer.git')
+    root_node = build_tree(root_path)
+    markdown = generate_diagram(root_node)
+    print(markdown)
+    # root_path = '/Users/pezhao/Documents/Testing/github-rag-assistant/RAG-Blueprint'
+    # delete_repository(root_path)
+    # shutil.rmtree('.chroma')
 
 
 if __name__ == "__main__":

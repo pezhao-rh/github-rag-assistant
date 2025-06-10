@@ -8,7 +8,9 @@ import os
 import re
 import ast
 
-client = LlamaStackClient(base_url="http://localhost:8321")
+LLAMASTACK_URL = os.getenv("LLAMASTACK_URL", "http://localhost:8321")
+
+client = LlamaStackClient(base_url=LLAMASTACK_URL)
 doc_count = 0
 
 embed_lm = next(m for m in client.models.list() if m.model_type == "embedding")
@@ -133,8 +135,6 @@ def answer_query_with_rag(query):
         session_id=session_id,
         stream=False
     )
-
-    print(response.steps)
 
     sources = get_sources(response)
 

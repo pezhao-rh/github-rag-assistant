@@ -54,7 +54,7 @@ pip install uv
 2. Install the dependencies
 
 ```sh
-uv install
+uv sync
 ```
 
 3. Make sure Ollama is running

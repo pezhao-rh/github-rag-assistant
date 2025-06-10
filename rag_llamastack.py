@@ -1,12 +1,10 @@
 # RAG implementation using LlamaStack's Agent and RAG tool.
 
-from llama_stack_client import LlamaStackClient
-from llama_stack_client import Agent, AgentEventLogger
+from llama_stack_client import LlamaStackClient, Agent
 from llama_stack_client.types import Document
 import uuid
 import mimetypes
 import os
-from rich.pretty import pprint
 import re
 import ast
 
@@ -16,12 +14,18 @@ doc_count = 0
 embed_lm = next(m for m in client.models.list() if m.model_type == "embedding")
 embedding_model = embed_lm.identifier
 
+providers = client.providers.list()
+vector_io_provider = None
+for x in providers:
+    if x.api == "vector_io":
+        vector_io_provider = x.provider_id
+
 vector_db_id = f"v{uuid.uuid4().hex}"
 client.vector_dbs.register(
     vector_db_id=vector_db_id,
     embedding_model=embedding_model,
     embedding_dimension=embed_lm.metadata["embedding_dimension"],
-    provider_id="faiss",
+    provider_id=vector_io_provider,
 )
 
 model = "llama3.1:8b-instruct-fp16"

@@ -176,7 +176,7 @@ def answer_query_with_rag(query, n=5):
 
 def answer_query_no_rag():
     prompt = """
-    "You are a helpful AI assistant. To answer questions about a GitHub repository, I need you to first provide a repository URL in the 'Settings' section of the sidebar and click 'Ingest'. Once the repository is processed, I'll be able to answer your questions."
+    You are a helpful AI assistant. To answer questions about a GitHub repository, I need you to first provide a repository URL in the 'Settings' section of the sidebar and click 'Ingest'. Once the repository is processed, I'll be able to answer your questions.
     """
 
     output = ollama.generate(

@@ -13,6 +13,11 @@ A chat assistant that allows users to ask questions about a GitHub repo (e.g., â
 
 **What is RAG?** RAG enhances LLMs by retrieving relevant information from an external knowledge base to ground its responses, making them more accurate and up-to-date.
 
+## Features
+- Chat assistant with memory and knowledge of provided repository
+- Sources tab to view referenced files
+- Detailed directory tree visualization
+
 ## See it in action 
 
 ![demo](./images/source-demo.png)
@@ -20,8 +25,9 @@ A chat assistant that allows users to ask questions about a GitHub repo (e.g., â
 ## Architecture
 
 - **Streamlit App**: Chat interface, repository visualization
-- **Ollama**: Runs embedding model (all-minilm), generation model (Llama3) 
-- **ChromaDB**: Stores embeddings and performs similarity search for RAG
+- **Llamastack**: API layer for agents, tooling, and vector IO 
+- **Ollama**: Runs embedding model (all-minilm), generation model (Llama3)
+- **In-memory Faiss Database**: Stores embeddings and performs similarity search for RAG
 
 ## Requirements
 

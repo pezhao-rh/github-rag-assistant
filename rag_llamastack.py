@@ -55,6 +55,7 @@ rag_agent = Agent(
 
 session_id = rag_agent.create_session(session_name=f"s{uuid.uuid4().hex}")
 
+
 def load_document(filepath):
     # extract file contents
     print(f"Reading {filepath}")
@@ -108,6 +109,17 @@ def get_content_and_filename(item):
         
     return None, None
 
+def get_sources(chat_response):
+    sources = []
+    for step in chat_response.steps:
+        if step.step_type == "tool_execution" and step.tool_responses:
+            for responses in step.tool_responses:
+                for item in responses.content:
+                    text, file_name = get_content_and_filename(item)
+                    if file_name:
+                        sources.append({"file": file_name, "text": text})
+    return sources
+
 def answer_query_with_rag(query):
     global rag_agent, session_id
 
@@ -118,28 +130,28 @@ def answer_query_with_rag(query):
         stream=False
     )
 
-    # retrieve sources
-    sources = []
-    tool_step = next(step for step in response.steps if step.step_type == "tool_execution")
-    for responses in tool_step.tool_responses:
-        for item in responses.content:
-            text, file_name = get_content_and_filename(item)
-            if file_name:
-                sources.append({"file": file_name, "text": text})
+    print(response.steps)
+
+    sources = get_sources(response)
 
     return response.output_message.content, sources
 
 def answer_query_no_rag():
+    global model
     prompt = """
-    "You are a helpful AI assistant. To answer questions about a GitHub repository, I need you to first provide a repository URL in the 'Settings' section of the sidebar and click 'Ingest'. Once the repository is processed, I'll be able to answer your questions."
+    You are a helpful AI assistant. To answer questions about a GitHub repository, I need you to first provide a repository URL in the Settings section. Once the repository is processed, I'll be able to answer your questions. Be brief and concise.
     """
 
-    response = rag_agent.create_turn(
-        messages=[{"role": "user", "content": prompt}],
-        session_id=session_id,
+    response = client.inference.chat_completion(
+        model_id=model,
+        messages=[
+            {"role": "system", "content": prompt},
+            {"role": "user", "content": ""},
+        ],
         stream=False
     )
-    return response.output_message.content 
+
+    return response.completion_message.content
 
 def single_document_rag_test():
     store_document("pokemon.txt")

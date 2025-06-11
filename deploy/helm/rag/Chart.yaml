@@ -1,0 +1,17 @@
+apiVersion: v2
+name: rag
+description: A Helm chart for Kubernetes (pgvector, llm-service, llama-stack)
+type: application
+version: 0.1.0
+appVersion: "1.16.0"
+
+dependencies:
+  - name: pgvector
+    version: 0.1.0
+    repository: https://rhecosystemappeng.github.io/ai-architecture-charts
+  - name: llm-service
+    version: 0.1.0
+    repository: https://rhecosystemappeng.github.io/ai-architecture-charts
+  - name: llama-stack
+    version: 0.1.0
+    repository: https://rhecosystemappeng.github.io/ai-architecture-charts

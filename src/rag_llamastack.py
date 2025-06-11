@@ -8,9 +8,9 @@ import os
 import re
 import ast
 
-LLAMASTACK_URL = os.getenv("LLAMASTACK_URL", "http://localhost:8321")
+LLAMA_STACK_ENDPOINT = os.getenv("LLAMA_STACK_ENDPOINT", "http://localhost:8321")
 
-client = LlamaStackClient(base_url=LLAMASTACK_URL)
+client = LlamaStackClient(base_url=LLAMA_STACK_ENDPOINT)
 doc_count = 0
 
 embed_lm = next(m for m in client.models.list() if m.model_type == "embedding")
@@ -31,11 +31,11 @@ client.vector_dbs.register(
 )
 
 model = "llama3.1:8b-instruct-fp16"
-llm = next(m for m in client.models.list() if m.model_type == "llm" and m.identifier == model)
+llm = next(m for m in client.models.list() if m.model_type == "llm")#and m.identifier == model)
 
 rag_agent = Agent(
     client,
-    model=model,
+    model=llm.identifier,
     instructions=(
         "You are a highly knowledgeable AI assistant specializing in understanding and explaining codebases and technical documentation from GitHub repositories. "
         "Your primary function is to answer questions, provide summaries, explain complex functions, and help navigate the codebase. "
@@ -141,13 +141,13 @@ def answer_query_with_rag(query):
     return response.output_message.content, sources
 
 def answer_query_no_rag():
-    global model
+    global llm
     prompt = """
     You are a helpful AI assistant. To answer questions about a GitHub repository, I need you to first provide a repository URL in the Settings section. Once the repository is processed, I'll be able to answer your questions. Be brief and concise.
     """
 
     response = client.inference.chat_completion(
-        model_id=model,
+        model_id=llm.identifier,
         messages=[
             {"role": "system", "content": prompt},
             {"role": "user", "content": ""},

@@ -1,0 +1,12 @@
+dependencies:
+- name: pgvector
+  repository: https://rhecosystemappeng.github.io/ai-architecture-charts
+  version: 0.1.0
+- name: llm-service
+  repository: https://rhecosystemappeng.github.io/ai-architecture-charts
+  version: 0.1.0
+- name: llama-stack
+  repository: https://rhecosystemappeng.github.io/ai-architecture-charts
+  version: 0.1.0
+digest: sha256:c615ebe26ff298f02369c26b36da2a457fa7a3ba652f1c3b34d51fec16e385ce
+generated: "2025-06-11T11:13:35.672499-04:00"

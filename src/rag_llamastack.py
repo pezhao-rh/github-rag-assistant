@@ -60,7 +60,7 @@ rag_agent = Agent(
 )
 
 session_id = rag_agent.create_session(session_name=f"s{uuid.uuid4().hex}")
-
+doc_id_to_filename = {}
 
 def load_document(filepath):
     # extract file contents
@@ -79,14 +79,16 @@ def store_documents(files):
 
 
 def store_document(filepath):
-    global doc_count, vector_db_id, client
+    global doc_count, vector_db_id, client, doc_id_to_filename
     mime_type, _ = mimetypes.guess_type(filepath)
+    doc_id = f"num-{doc_count}"
     document = Document(
-        document_id=f"num-{doc_count}",
+        document_id=doc_id,
         content=load_document(filepath),
         mime_type=mime_type,
         metadata={"file": filepath}
     )
+    doc_id_to_filename[doc_id] = filepath
     doc_count += 1
 
     client.tool_runtime.rag_tool.insert(
@@ -97,14 +99,14 @@ def store_document(filepath):
     
 def get_content_and_filename(item):
     # getting content and file name from a TextContentItem object
-    match = re.search(
+    match1 = re.search(
         r"Content:\s*(.*?)\nMetadata:\s*(\{.*?\})\n",
         item.text,
         re.DOTALL
     )
-    if match:
-        content = match.group(1).strip()
-        metadata_str = match.group(2).strip()
+    if match1:
+        content = match1.group(1).strip()
+        metadata_str = match1.group(2).strip()
         try:
             metadata = ast.literal_eval(metadata_str)
             if isinstance(metadata, dict):
@@ -113,6 +115,18 @@ def get_content_and_filename(item):
         except (ValueError, SyntaxError) as e:
             print(f"Warning: Could not parse metadata string: {metadata_str}. Error: {e}")
         
+    global doc_id_to_filename
+    match2 = re.search(
+        r"Document_id:\s*(.*?)\nContent:\s*(.*?)\n",
+        item.text,
+        re.DOTALL
+    )
+    if match2:
+        document_id = match2.group(1).strip()
+        content = match2.group(2).strip()
+        file_name = doc_id_to_filename[document_id]
+        return content, os.path.basename(file_name)
+
     return None, None
 
 def get_sources(chat_response):
@@ -136,6 +150,7 @@ def answer_query_with_rag(query):
         stream=False
     )
 
+    print(response.steps)
     sources = get_sources(response)
 
     return response.output_message.content, sources

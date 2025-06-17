@@ -1,9 +1,9 @@
 replicaCount: 1
 
 image:
-  repository: quay.io/ecosystem-appeng/llamastack-dist-ui
+  repository: quay.io/rh-ee-pezhao/appeng/github-rag-ui
   pullPolicy: IfNotPresent
-  tag: 0.2.8
+  tag: 0.1.3
 
 service:
   type: ClusterIP
@@ -29,10 +29,14 @@ env:
 volumes:
   - emptyDir: {}
     name: dot-streamlit
+  - emptyDir: {}
+    name: dot-cache
 
 volumeMounts:
   - mountPath: /.streamlit
     name: dot-streamlit
+  - mountPath: /.cache
+    name: dot-cache
 
 # Common model values for llm-service and llama-stack
 # See format in https://github.com/RHEcosystemAppEng/ai-architecture-charts/blob/main/helm/llm-service/values.yaml

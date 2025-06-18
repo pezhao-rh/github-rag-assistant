@@ -18,10 +18,6 @@ A chat assistant that allows users to ask questions about a GitHub repo (e.g., â
 - Sources tab to view referenced files
 - Detailed directory tree visualization
 
-## See it in action 
-
-![demo](./images/source-demo.png)
-
 ## Architecture
 
 ![diagram](images/diagram.png)
@@ -30,6 +26,10 @@ A chat assistant that allows users to ask questions about a GitHub repo (e.g., â
 - **Llamastack**: API layer for agents, tooling, and vector IO 
 - **LLM**: Deployed on OpenShift AI via vLLM
 - **PostgreSQL + PGVector**: Stores embeddings and performs similarity search for RAG
+
+## See it in action 
+
+![demo](./images/source-demo.png)
 
 ---
 ## Installation

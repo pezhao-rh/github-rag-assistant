@@ -207,7 +207,7 @@ def single_document_rag_test():
 
 
 def main():
-    store_document('rag-architecture.png')
+    single_document_rag_test()
 
 if __name__ == "__main__":
     main()

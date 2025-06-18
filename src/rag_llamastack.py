@@ -176,7 +176,7 @@ def single_document_rag_test():
     store_document("pokemon.txt")
     query = "What is Piplup? Describe this Pokemon."
     answer = answer_query_with_rag(query)
-    # print(answer)
+    print(answer)
 
 
 def main():

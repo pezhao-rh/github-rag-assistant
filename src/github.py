@@ -1,6 +1,5 @@
 import subprocess
 import os
-from collections import deque
 import shutil
 import fnmatch
 
@@ -191,13 +190,7 @@ def clone_and_build_tree(link):
     return root_path, file_list, diagram
 
 def main():
-    root_path = clone_repository('https://github.com/rh-ai-kickstart/AI-Observability-Metric-Summarizer.git')
-    root_node = build_tree(root_path)
-    markdown = generate_diagram(root_node)
-    print(markdown)
-    # root_path = '/Users/pezhao/Documents/Testing/github-rag-assistant/RAG-Blueprint'
-    # delete_repository(root_path)
-    # shutil.rmtree('.chroma')
+    pass
 
 
 if __name__ == "__main__":

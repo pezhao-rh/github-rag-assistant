@@ -6,7 +6,7 @@ This application provides an interactive chatbot interface to analyze and ask qu
 
 It helps teams understand and adapt to large and unfamiliar codebases by offering specialized insight into repositories.
 
-To get this running, jump straight to [installation](#install). 
+To get this running, jump straight to [installation](#installation). 
 
 ## Description 
 A chat assistant that allows users to ask questions about a GitHub repo (e.g., “How do I deploy this?” or “Explain this function”), using RAG (Retrieval-Augmented Generation) with LLMs.
@@ -28,21 +28,15 @@ A chat assistant that allows users to ask questions about a GitHub repo (e.g., �
 
 - **Streamlit App**: Chat interface, repository visualization
 - **Llamastack**: API layer for agents, tooling, and vector IO 
-- **LLM**: Deployed on OpenShift AI
+- **LLM**: Deployed on OpenShift AI via vLLM
 - **PostgreSQL + PGVector**: Stores embeddings and performs similarity search for RAG
 
-## Requirements
-
-Ollama installed with the `minilm` and `llama3.1:8b-instruct-fp16` models:
-```sh
-ollama pull all-minilm
-ollama pull llama3.1:8b-instruct-fp16
-```
-
 ---
-This kicktart supports two modes of deployments:
-- Local
-- Openshift
+## Installation
+
+This kickstart supports two modes of deployment:
+- [Openshift](#openshift-installation)
+- [Local](#local-deployment-using-ollama)
 
 ## Openshift Installation
 
@@ -103,7 +97,18 @@ oc get route
 ```
 
 ## Local Deployment using Ollama
+
+#### Requirements
+
+Ollama installed with the `minilm` and `llama3.1:8b-instruct-fp16` models:
+```sh
+ollama pull all-minilm
+ollama pull llama3.1:8b-instruct-fp16
+```
+
 Note that the local deployment uses an in-memory FAISS database instead of PostgreSQL + PGVector. This is configured in the default Llamastack Ollama template.
+
+#### Installation Steps
 
 1. Make sure that `uv` is installed
 

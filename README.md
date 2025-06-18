@@ -24,10 +24,12 @@ A chat assistant that allows users to ask questions about a GitHub repo (e.g., â
 
 ## Architecture
 
+![diagram](images/diagram.png)
+
 - **Streamlit App**: Chat interface, repository visualization
 - **Llamastack**: API layer for agents, tooling, and vector IO 
-- **Ollama**: Runs embedding model (all-minilm), generation model (Llama3)
-- **In-memory Faiss Database**: Stores embeddings and performs similarity search for RAG
+- **LLM**: Deployed on OpenShift AI
+- **PostgreSQL + PGVector**: Stores embeddings and performs similarity search for RAG
 
 ## Requirements
 
@@ -37,40 +39,107 @@ ollama pull all-minilm
 ollama pull llama3.1:8b-instruct-fp16
 ```
 
-## Install 
+---
+This kicktart supports two modes of deployments:
+- Local
+- Openshift
+
+## Openshift Installation
+
+#### Prerequisites
+- OpenShift Cluster 4.16+ with OpenShift AI
+- OpenShift Client CLI - `oc`
+- Helm CLI - `helm`
+- 1 GPU with 24GB of VRAM for the LLM
+- Hugging face Token
+- Access to Meta Llama model
+- Installed `yq`
+
+#### Installation Steps
+1. Login to your OpenShift Cluster
+
+```bash
+oc login --server="<cluster-api-endpoint>" --token="sha256~XYZ"
+```
+
+2. If the GPU nodes are tainted, find the taint key. You will have to pass in the
+   make command to ensure that the llm pods are deployed on the tainted nodes with GPU.
+   In the example below the key for the taint is `nvidia.com/gpu`
+
+
+```bash
+oc get nodes -o yaml | grep -A 3 taint
+```
+The output of the command will be something like below
+```
+  taints:
+    - effect: NoSchedule
+      key: nvidia.com/gpu
+      value: "true"
+--
+    taints:
+    - effect: NoSchedule
+      key: nvidia.com/gpu
+      value: "true"
+```
+
+You can work with your OpenShift cluster admin team to determine what labels and taints identify GPU-enabled worker nodes.  It is also possible that all your worker nodes have GPUs therefore have no distinguishing taint.
+
+3. Navigate to Helm deploy directory
+
+```bash
+cd deploy/helm
+```
+
+4. Run the install command
+```bash
+make install NAMESPACE=github-rag-assistant LLM=llama-3-2-3b-instruct LLM_TOLERATION="nvidia.com/gpu" 
+```
+
+5. Access the route once all services have been deployed to access the Streamlit UI
+
+```bash
+oc get route
+```
+
+## Local Deployment using Ollama
+Note that the local deployment uses an in-memory FAISS database instead of PostgreSQL + PGVector. This is configured in the default Llamastack Ollama template.
 
 1. Make sure that `uv` is installed
 
-```sh
+```bash
 uv --version
 ```
 
 If not, install using `pip`
 
-```sh
+```bash
 pip install uv
 ```
 
 2. Install the dependencies
 
-```sh
+```bash
 uv sync
 ```
 
 3. Make sure Ollama is running
 
-```sh
+```bash
 ollama run llama3.1:8b-instruct-fp16 # Or start the Ollama application
 ```
 
 4. Start the LlamaStack server
 
-```sh
+```bash
 source .venv/bin/activate
 INFERENCE_MODEL=llama3.1:8b-instruct-fp16 llama stack build --template ollama --image-type venv --run
 ```
 
 4. Run the Streamlit app
-```sh
+```bash
 uv run streamlit run app.py
 ```
+
+---
+Helm Chart designs adapted from [RAG Blueprint](https://github.com/rh-ai-kickstart/RAG)

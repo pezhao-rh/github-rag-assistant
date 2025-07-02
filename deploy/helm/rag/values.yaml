@@ -2,7 +2,7 @@ replicaCount: 1
 
 image:
   repository: quay.io/ecosystem-appeng/github-rag-ui
-  pullPolicy: IfNotPresent
+  pullPolicy: Always
   tag: 0.1.0
 
 service:

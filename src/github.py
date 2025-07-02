@@ -2,23 +2,45 @@ import subprocess
 import os
 import shutil
 import fnmatch
+from typing import Optional
 
-# Node class for representing structure of github repositories
 class Node:
-    def __init__(self, filepath, is_dir=False, parent=None):
+    """Node class for representing structure of github repositories."""
+    
+    def __init__(self, filepath: str, is_dir: bool = False, parent: Optional['Node'] = None):
+        """Initialize a new Node.
+        
+        Args:
+            filepath: Path to the file or directory
+            is_dir: Whether this node represents a directory
+            parent: Parent node in the tree
+        """
         self.name = os.path.basename(filepath)
         self.filepath = filepath
         self.is_dir = is_dir
         self.parent = parent
         self.children = [] if is_dir else None
 
-    def add_child(self, child_node):
-        self.children.append(child_node)
-        child_node.parent = self
-        self.children.sort(key=lambda x: x.name.lower())
+    def add_child(self, child_node: 'Node'):
+        """Add a child node and maintain sorted order.
+        
+        Args:
+            child_node: Child node to add
+        """
+        if self.children:
+            self.children.append(child_node)
+            child_node.parent = self
+            self.children.sort(key=lambda x: x.name.lower())
 
-# build tree of file nodes given the path of root
-def build_tree(root_path):
+def build_tree(root_path: str) -> Optional[Node]:
+    """Build a tree of file nodes from a root directory path.
+    
+    Args:
+        root_path: Path to the root directory
+        
+    Returns:
+        Root node of the tree, or None if path doesn't exist
+    """
     if not os.path.exists(root_path):
         return None
     if os.path.isfile(root_path):
@@ -51,9 +73,16 @@ def build_tree(root_path):
     return root_node
 
 
-def isIgnored(filepath):
+def isIgnored(filepath: str) -> bool:
+    """Check if a file should be ignored for ingestion.
+    
+    Args:
+        filepath: Path to the file to check
+        
+    Returns:
+        True if file should be ignored, False otherwise
+    """
     filename = os.path.basename(filepath)
-    # if file should be ignored for ingestion
     patterns = [
         # Python
         '*.pyc','*.pyo','*.pyd','__pycache__','.pytest_cache','.coverage','.tox','.nox','.mypy_cache','.ruff_cache','.hypothesis','poetry.lock','Pipfile.lock','init.py','__init__.py','.python-version','uv.lock','pyproject.toml',
@@ -109,8 +138,15 @@ def isIgnored(filepath):
 
     return False
 
-# create list of files to ingest from a full tree
-def get_file_list(root_node):
+def get_file_list(root_node: Node) -> list[str]:
+    """Create a list of file paths from a tree structure.
+    
+    Args:
+        root_node: Root node of the tree to traverse
+        
+    Returns:
+        List of file paths
+    """
     files = []
     stack = [root_node]
     while stack:
@@ -122,14 +158,18 @@ def get_file_list(root_node):
                 stack.append(child)
     return files
 
-# generate markdown visualization of a tree
-def generate_diagram(root_node):
-    if root_node is None:
-        return "No directory to display."
-
+def generate_diagram(root_node: Node) -> str:
+    """Generate a markdown visualization of a file tree.
+    
+    Args:
+        root_node: Root node of the tree to visualize
+        
+    Returns:
+        Markdown-formatted string representation of the tree
+    """
     lines = []
 
-    def traverse_and_format(node, level=0, prefix=""):
+    def traverse_and_format(node: Node, level: int = 0, prefix: str = ""):
 
         filename = node.name
         if node.is_dir:
@@ -152,8 +192,15 @@ def generate_diagram(root_node):
     return "  \n".join(lines)
 
 
-def clone_repository(link):
-    # clone repository, return path of repo
+def clone_repository(link: str) -> str:
+    """Clone a git repository and return its local path.
+    
+    Args:
+        link: Git repository URL to clone
+        
+    Returns:
+        Path to the cloned repository directory
+    """
     repo_name = link.split('/')[-1]
     repo_name = repo_name.replace('.git', '')
     try:
@@ -163,25 +210,44 @@ def clone_repository(link):
         return filepath
     except subprocess.CalledProcessError as e:
         print(f"Failed to clone repository: {e}")
+        return ""
 
 
-def delete_repository(filepath):
+def delete_repository(filepath: str) -> None:
+    """Delete a repository directory.
+    
+    Args:
+        filepath: Path to the repository directory to delete
+    """
     if not os.path.exists(filepath):
         print("Repository does not exist")
-        return False
     try:
         shutil.rmtree(filepath)
         print("Repository deleted")
-        return True
     except Exception as e:
         print(f"Error deleting repository: {e}")
-        return False
     
-# clones repository and returns root path, file list, and markdown visualization
-def clone_and_build_tree(link):
+def clone_and_build_tree(link: str) -> tuple[str, list[str], str]:
+    """Clone a repository and build its file tree structure.
+    
+    Args:
+        link: Git repository URL to clone
+        
+    Returns:
+        Tuple of (root_path, file_list, diagram) where:
+        - root_path: Path to cloned repository
+        - file_list: List of file paths in the repository
+        - diagram: Markdown visualization of the tree structure
+        
+    Raises:
+        ValueError: If tree building fails
+    """
     
     root_path = clone_repository(link)
     root_node = build_tree(root_path)
+    if root_node is None:
+        raise ValueError("Failed to build tree")
+    
     file_list = get_file_list(root_node)
     diagram = generate_diagram(root_node)
 

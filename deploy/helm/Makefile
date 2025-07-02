@@ -1,5 +1,4 @@
-# Makefile for RAG Deployment
-# Replaces the original deploy.sh script with additional uninstall functionality
+# Makefile for Github RAG Assistant Deployment
 ifeq ($(NAMESPACE),)
 ifeq (,$(filter depend list-models% help,$(MAKECMDGOALS)))
 $(error NAMESPACE is not set)

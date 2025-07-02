@@ -49,10 +49,10 @@ for message in st.session_state.messages:
         if message["role"] == "assistant" and "sources" in message and message["sources"] and len(message["sources"]) > 0:
             with st.expander("View Sources"):
                 for idx, source in enumerate(message["sources"]):
-                    st.markdown(f"`{source["file"]}`")
+                    st.markdown(f"`{source['file']}`")
                     st.code(source["text"])
                     st.markdown("---")
-
+# user input
 if prompt := st.chat_input():
 
     st.session_state.messages.append({"role": "user", "content": prompt})
@@ -76,7 +76,7 @@ if prompt := st.chat_input():
         if retrieved_sources and len(retrieved_sources) > 0:
             with st.expander("View Sources"):
                 for idx, source in enumerate(retrieved_sources):
-                    st.markdown(f"`{source["file"]}`")
+                    st.markdown(f"`{source['file']}`")
                     st.code(source["text"])
                     st.markdown("---")
 

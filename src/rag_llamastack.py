@@ -30,8 +30,7 @@ client.vector_dbs.register(
     provider_id=vector_io_provider,
 )
 
-model = "llama3.1:8b-instruct-fp16"
-llm = next(m for m in client.models.list() if m.model_type == "llm")#and m.identifier == model)
+llm = next(m for m in client.models.list() if m.model_type == "llm")
 
 rag_agent = Agent(
     client,
@@ -47,16 +46,19 @@ rag_agent = Agent(
     tools=[
         {
             "name": "builtin::rag/knowledge_search",
-            "args": {"vector_db_ids": [vector_db_id]},
-            # Defaults
-            "query_config": {
+            "args": {
+                "vector_db_ids": [vector_db_id],
                 "chunk_size_in_tokens": 512,
                 "chunk_overlap_in_tokens": 50,
                 "chunk_template": "Result {index}\nContent: {chunk.content}\nMetadata: {metadata}\n",
             },
-
         }
     ],
+    max_infer_iters=5,
+    sampling_params={
+        "strategy": {"type": "top_p", "temperature": 0.7, "top_p": 0.95},
+        "max_tokens": 2048,
+    },
 )
 
 session_id = rag_agent.create_session(session_name=f"s{uuid.uuid4().hex}")
@@ -77,7 +79,7 @@ def store_documents(files):
     for file in files:
         store_document(file)
 
-
+# store a document in the vector database
 def store_document(filepath):
     global doc_count, vector_db_id, client, doc_id_to_filename
     mime_type, _ = mimetypes.guess_type(filepath)
@@ -97,8 +99,9 @@ def store_document(filepath):
     chunk_size_in_tokens=512,
 )
     
+# retrieve content and file name from a TextContentItem object
 def get_content_and_filename(item):
-    # getting content and file name from a TextContentItem object
+    # for the Ollama llamastack configuration
     match1 = re.search(
         r"Content:\s*(.*?)\nMetadata:\s*(\{.*?\})\n",
         item.text,
@@ -111,10 +114,11 @@ def get_content_and_filename(item):
             metadata = ast.literal_eval(metadata_str)
             if isinstance(metadata, dict):
                 file_name = metadata.get('file')
-                return content, os.path.basename(file_name)
+                if file_name:
+                    return content, os.path.basename(file_name)
         except (ValueError, SyntaxError) as e:
             print(f"Warning: Could not parse metadata string: {metadata_str}. Error: {e}")
-        
+    # for the vLLM llamastack configuration
     global doc_id_to_filename
     match2 = re.search(
         r"Document_id:\s*(.*?)\nContent:\s*(.*?)\n",
@@ -129,6 +133,7 @@ def get_content_and_filename(item):
 
     return None, None
 
+# retrieve sources from a chat response
 def get_sources(chat_response):
     sources = []
     for step in chat_response.steps:
@@ -144,16 +149,25 @@ def answer_query_with_rag(query):
     global rag_agent, session_id
 
     # ask agent
-    response = rag_agent.create_turn(
-        messages=[{"role": "user", "content": query}],
-        session_id=session_id,
-        stream=False
-    )
+    try:
+        response = rag_agent.create_turn(
+            messages=[{"role": "user", "content": query}],
+            session_id=session_id,
+            stream=False
+        )
+    except RuntimeError as e:
+        # reset session
+        session_id = rag_agent.create_session(session_name=f"s{uuid.uuid4().hex}")
+        response = rag_agent.create_turn(
+            messages=[{"role": "user", "content": query}],
+            session_id=session_id,
+            stream=False
+        )
 
-    print(response.steps)
     sources = get_sources(response)
+    reply = response.output_message.content
 
-    return response.output_message.content, sources
+    return reply, sources
 
 def answer_query_no_rag():
     global llm
@@ -171,16 +185,3 @@ def answer_query_no_rag():
     )
 
     return response.completion_message.content
-
-def single_document_rag_test():
-    store_document("pokemon.txt")
-    query = "What is Piplup? Describe this Pokemon."
-    answer = answer_query_with_rag(query)
-    print(answer)
-
-
-def main():
-    single_document_rag_test()
-
-if __name__ == "__main__":
-    main()

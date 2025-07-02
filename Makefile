@@ -1,5 +1,5 @@
-VERSION ?= 0.1.3
-REGISTRY ?= quay.io/rh-ee-pezhao/appeng
+VERSION ?= 0.1.0
+REGISTRY ?= quay.io/ecosystem-appeng
 
 llamastack:
 	source .venv/bin/activate

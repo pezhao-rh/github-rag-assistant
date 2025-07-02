@@ -1,9 +1,9 @@
 replicaCount: 1
 
 image:
-  repository: quay.io/rh-ee-pezhao/appeng/github-rag-ui
+  repository: quay.io/ecosystem-appeng/github-rag-ui
   pullPolicy: IfNotPresent
-  tag: 0.1.3
+  tag: 0.1.0
 
 service:
   type: ClusterIP

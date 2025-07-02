@@ -17,9 +17,8 @@ class Node:
         child_node.parent = self
         self.children.sort(key=lambda x: x.name.lower())
 
-
+# build tree of file nodes given the path of root
 def build_tree(root_path):
-    # build tree of file nodes given the path of root
     if not os.path.exists(root_path):
         return None
     if os.path.isfile(root_path):
@@ -57,7 +56,7 @@ def isIgnored(filepath):
     # if file should be ignored for ingestion
     patterns = [
         # Python
-        '*.pyc','*.pyo','*.pyd','__pycache__','.pytest_cache','.coverage','.tox','.nox','.mypy_cache','.ruff_cache','.hypothesis','poetry.lock','Pipfile.lock','init.py','__init__.py',
+        '*.pyc','*.pyo','*.pyd','__pycache__','.pytest_cache','.coverage','.tox','.nox','.mypy_cache','.ruff_cache','.hypothesis','poetry.lock','Pipfile.lock','init.py','__init__.py','.python-version','uv.lock','pyproject.toml',
         # JavaScript/FileSystemNode
         'node_modules','bower_components','package-lock.json','yarn.lock','.npm','.yarn','.pnpm-store','bun.lock','bun.lockb',
         # Java'*.class',
@@ -91,7 +90,7 @@ def isIgnored(filepath):
         # Documentation
         'site-packages','.docusaurus','.next','.nuxt',
         # Other common patterns
-        'LICENSE','.helmignore','*.pdf','*.csv',
+        'LICENSE','.helmignore','*.pdf','*.csv','.ansible-lint',
         # Zip files
         '*.tar','*.zip','*.tar.gz','*.tar.xz','*.tar.bz2',
         # Minified files
@@ -110,9 +109,8 @@ def isIgnored(filepath):
 
     return False
 
-
+# create list of files to ingest from a full tree
 def get_file_list(root_node):
-    # list of files to ingest from a full tree
     files = []
     stack = [root_node]
     while stack:
@@ -124,8 +122,8 @@ def get_file_list(root_node):
                 stack.append(child)
     return files
 
+# generate markdown visualization of a tree
 def generate_diagram(root_node):
-    # generating visual representation of tree
     if root_node is None:
         return "No directory to display."
 
@@ -179,19 +177,12 @@ def delete_repository(filepath):
         print(f"Error deleting repository: {e}")
         return False
     
-
+# clones repository and returns root path, file list, and markdown visualization
 def clone_and_build_tree(link):
-    # clones repository and returns root path, file list, and markdown visualization
+    
     root_path = clone_repository(link)
     root_node = build_tree(root_path)
     file_list = get_file_list(root_node)
     diagram = generate_diagram(root_node)
 
     return root_path, file_list, diagram
-
-def main():
-    pass
-
-
-if __name__ == "__main__":
-    main()

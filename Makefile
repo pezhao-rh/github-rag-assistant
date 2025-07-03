@@ -1,9 +1,9 @@
-VERSION ?= 0.1.0
+VERSION ?= 0.2.0
 REGISTRY ?= quay.io/ecosystem-appeng
 
 llamastack:
-	source .venv/bin/activate
-	INFERENCE_MODEL=llama3.1:8b-instruct-fp16 llama stack build --template ollama --image-type venv --run
+	source .venv/bin/activate && \
+	INFERENCE_MODEL=llama3.2:3b-instruct-fp16 llama stack build --template ollama --image-type venv --run
 
 ui:
 	uv run streamlit run src/app.py

@@ -27,7 +27,7 @@ class Node:
         Args:
             child_node: Child node to add
         """
-        if self.children:
+        if self.children is not None:
             self.children.append(child_node)
             child_node.parent = self
             self.children.sort(key=lambda x: x.name.lower())
@@ -84,52 +84,66 @@ def isIgnored(filepath: str) -> bool:
     """
     filename = os.path.basename(filepath)
     patterns = [
-        # Python
+        # Python - compiled and cache files
         '*.pyc','*.pyo','*.pyd','__pycache__','.pytest_cache','.coverage','.tox','.nox','.mypy_cache','.ruff_cache','.hypothesis','poetry.lock','Pipfile.lock','init.py','__init__.py','.python-version','uv.lock','pyproject.toml',
-        # JavaScript/FileSystemNode
-        'node_modules','bower_components','package-lock.json','yarn.lock','.npm','.yarn','.pnpm-store','bun.lock','bun.lockb',
-        # Java'*.class',
-        '*.jar','*.war','*.ear','*.nar','.gradle/','build/','.settings/','.classpath','gradle-app.setting','*.gradle',
-        # IDEs and editors / Java
-        '.project',
-        # C/C++
-        '*.o','*.obj','*.dll','*.dylib','*.exe','*.lib','*.out','*.a','*.pdb',
+        # JavaScript/Node - dependencies and build artifacts
+        'node_modules','bower_components','package-lock.json','yarn.lock','.npm','.yarn','.pnpm-store','bun.lock','bun.lockb','.eslintcache','.parcel-cache',
+        # Java - compiled files
+        '*.class','*.jar','*.war','*.ear','*.nar','.gradle/','build/','.settings/','.classpath','gradle-app.setting','*.gradle',
+        # C/C++ - compiled artifacts
+        '*.o','*.obj','*.dll','*.dylib','*.exe','*.lib','*.out','*.a','*.pdb','*.so','*.dylib',
         # Swift/Xcode
         '.build/','*.xcodeproj/','*.xcworkspace/','*.pbxuser','*.mode1v3','*.mode2v3','*.perspectivev3','*.xcuserstate','xcuserdata/','.swiftpm/',
         # Ruby
         '*.gem','.bundle/','vendor/bundle','Gemfile.lock','.ruby-version','.ruby-gemset','.rvmrc',
         # Rust
         'Cargo.lock','**/*.rs.bk',
-        # Java / Rust
-        'target/',
         # Go
-        'pkg/',
-        # .NET/C//
-        'obj/','*.suo','*.user','*.userosscache','*.sln.docstates','packages/','*.nupkg',
-        # Go / .NET / C//
-        'bin/',
-        # Version control
-        '.git','.svn','.hg','.gitignore',
-        # Virtual environments
-        'venv','.venv','env','virtualenv',
-        # Temporary and cache files
-        '*.log','*.bak','*.swp','*.tmp','*.temp','.cache','.sass-cache','.eslintcache','.DS_Store','Thumbs.db','desktop.ini','.vscode',
+        'pkg/','go.sum',
+        # .NET/C#
+        'obj/','*.suo','*.user','*.userosscache','*.sln.docstates','packages/','*.nupkg','*.exe.config',
+        # PHP
+        'vendor/','composer.lock',
         # Build directories and artifacts
-        'build','dist','target','out','*.egg-info','*.egg','*.whl','*.so',
-        # Documentation
-        'site-packages','.docusaurus','.next','.nuxt',
-        # Other common patterns
-        'LICENSE','.helmignore','*.pdf','*.csv','.ansible-lint',
-        # Zip files
-        '*.tar','*.zip','*.tar.gz','*.tar.xz','*.tar.bz2',
+        'build/','dist/','target/','out/','bin/','*.egg-info','*.egg','*.whl',
+        # Version control
+        '.git','.svn','.hg','.gitignore','.gitattributes','.gitmodules',
+        # Virtual environments
+        'venv/','.venv/','env/','virtualenv/','venv',
+        # IDEs and editors
+        '.project','.vscode/','.idea/','.vs/','.settings/','*.swp','*.swo','*~',
+        # OS-specific files
+        '.DS_Store','Thumbs.db','desktop.ini','ehthumbs.db',
+        # Temporary and cache files
+        '*.log','*.bak','*.tmp','*.temp','.cache/','.sass-cache/','*.orig',
+        # Documentation build directories
+        'site-packages/','.docusaurus/','.next/','.nuxt/','_site/','public/',
+        # Archives and compressed files
+        '*.zip','*.tar','*.gz','*.tar.gz','*.tar.xz','*.tar.bz2','*.rar','*.7z','*.xz','*.bz2',
+        # Images (binary files not useful for RAG)
+        '*.jpg','*.jpeg','*.png','*.gif','*.bmp','*.tiff','*.webp','*.svg','*.ico','*.cur','*.ani','img',
+        # Audio/Video files
+        '*.mp3','*.wav','*.flac','*.aac','*.ogg','*.wma','*.mp4','*.avi','*.mov','*.wmv','*.flv','*.webm',
+        # Font files
+        '*.ttf','*.otf','*.woff','*.woff2','*.eot',
+        # Database files
+        '*.db','*.sqlite','*.sqlite3','*.mdb','*.accdb',
         # Minified files
         '*.min.js','*.min.css',
         # Source maps
         '*.map',
         # Terraform
-        '.terraform','*.tfstate*',
-        # Images
-        '*.jpg', '*.jpeg', '*.png', '*.gif', '*.bmp', '*.tiff', '*.webp', '*.svg', '*.ico','img'
+        '.terraform/','*.tfstate*',
+        # Docker
+        '.dockerignore',
+        # Package manager lock files
+        'yarn.lock','pnpm-lock.yaml','composer.lock','Gemfile.lock','Pipfile.lock',
+        # Other common patterns
+        'LICENSE','LICENSE.txt','CHANGELOG','CHANGELOG.md','.helmignore','*.pdf','*.csv','.ansible-lint','.env',
+        # Binary executables
+        '*.exe','*.msi','*.dmg','*.pkg','*.deb','*.rpm',
+        # Certificate files
+        '*.pem','*.crt','*.key','*.p12','*.pfx'
     ]
 
     for pattern in patterns:

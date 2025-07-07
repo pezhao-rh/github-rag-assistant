@@ -15,11 +15,7 @@ client = LlamaStackClient(base_url=LLAMA_STACK_ENDPOINT)
 embed_lm = next(m for m in client.models.list() if m.model_type == "embedding")
 embedding_model = embed_lm.identifier
 
-providers = client.providers.list()
-vector_io_provider = None
-for x in providers:
-    if x.api == "vector_io":
-        vector_io_provider = x.provider_id
+vector_io_provider = next(p.provider_id for p in client.providers.list() if p.api == "vector_io")
 
 llm = next(m for m in client.models.list() if m.model_type == "llm")
 
@@ -39,9 +35,9 @@ class GithubAgent:
     
     def __init__(self):
         """Initialize a new RAG system with its own vector database and agent."""
-        self.vector_db_id = f"v{uuid.uuid4().hex}"
         self.doc_id_to_filename = {}
         self.doc_count = 0
+        self.vector_db_id = f"v{uuid.uuid4().hex}"
         
         # Create user-specific vector database
         client.vector_dbs.register(

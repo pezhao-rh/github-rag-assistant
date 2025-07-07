@@ -109,7 +109,7 @@ class GithubAgent:
         self.doc_count = 0
     
     def store_document(self, filepath: str) -> None:
-        """Store a single document in the current vector database.
+        """Store a single document in the current vector database, skipping files that cannot be loaded or stored.
         
         Args:
             filepath (str): Path to the file to be stored in the vector database
@@ -120,25 +120,29 @@ class GithubAgent:
         content = load_document(filepath)
         if content is None:
             return
-            
-        document = Document(
-            document_id=doc_id,
-            content=content,
-            mime_type=mime_type,
-            metadata={"file": filepath}
-        )
         
-        self.doc_id_to_filename[doc_id] = filepath
-        self.doc_count += 1
+        try:
+            document = Document(
+                document_id=doc_id,
+                content=content,
+                mime_type=mime_type,
+                metadata={"file": filepath}
+            )
+            
+            self.doc_id_to_filename[doc_id] = filepath
+            self.doc_count += 1
 
-        client.tool_runtime.rag_tool.insert(
-            documents=[document],
-            vector_db_id=self.vector_db_id,
-            chunk_size_in_tokens=512,
-        )
+            client.tool_runtime.rag_tool.insert(
+                documents=[document],
+                vector_db_id=self.vector_db_id,
+                chunk_size_in_tokens=512,
+            )
+        except Exception as e:
+            print(f"Error storing document {filepath}, will not store: {e}")
+
     
     def store_documents(self, files: list[str]) -> None:
-        """Store multiple documents in the current vector database, skipping files that cannot be loaded.
+        """Store multiple documents in the current vector database, skipping files that cannot be loaded or stored.
         
         Args:
             files (list[str]): List of file paths to be stored in the vector database

@@ -5,7 +5,7 @@ import fnmatch
 from typing import Optional
 
 class Node:
-    """Node class for representing structure of github repositories."""
+    """Node class for representing structure of Github repositories."""
     
     def __init__(self, filepath: str, is_dir: bool = False, parent: Optional['Node'] = None):
         """Initialize a new Node.
@@ -109,7 +109,7 @@ def isIgnored(filepath: str) -> bool:
         # Version control
         '.git','.svn','.hg','.gitignore','.gitattributes','.gitmodules',
         # Virtual environments
-        'venv/','.venv/','env/','virtualenv/','venv',
+        'venv/','.venv/','env/','virtualenv/','venv','bin','lib',
         # IDEs and editors
         '.project','.vscode/','.idea/','.vs/','.settings/','*.swp','*.swo','*~',
         # OS-specific files
@@ -139,7 +139,7 @@ def isIgnored(filepath: str) -> bool:
         # Package manager lock files
         'yarn.lock','pnpm-lock.yaml','composer.lock','Gemfile.lock','Pipfile.lock',
         # Other common patterns
-        'LICENSE','LICENSE.txt','CHANGELOG','CHANGELOG.md','.helmignore','*.pdf','*.csv','.ansible-lint','.env',
+        'LICENSE','LICENSE.txt','CHANGELOG','CHANGELOG.md','.helmignore','*.pdf','*.csv','.ansible-lint','.env','.pkl',
         # Binary executables
         '*.exe','*.msi','*.dmg','*.pkg','*.deb','*.rpm',
         # Certificate files

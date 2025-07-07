@@ -103,7 +103,7 @@ oc get route
 Ollama installed with the `minilm` and `llama3.1:8b-instruct-fp16` models:
 ```sh
 ollama pull all-minilm
-ollama pull llama3.1:8b-instruct-fp16
+ollama pull llama3.1:8b-instruct-fp16 # Can use any Ollama model with tool functionality
 ```
 
 Note that the local deployment uses an in-memory FAISS database instead of PostgreSQL + PGVector. This is configured in the default Llamastack Ollama template.
